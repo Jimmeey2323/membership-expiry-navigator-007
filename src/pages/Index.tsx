@@ -595,7 +595,6 @@ const Index = () => {
                 </TabsList>
               </Card>
             </div>
-            </div>
 
             <TabsContent value="overview" className="space-y-6">
               <EnhancedDataTable 
