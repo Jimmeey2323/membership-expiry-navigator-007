@@ -335,6 +335,7 @@ const Index = () => {
       sessionsRange: { min: 0, max: 100 }
     });
     setQuickFilter('all');
+    setSmartFilters([]);
     toast.success("All filters cleared");
   };
 
@@ -392,159 +393,165 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-purple-50/10">
       {/* Full width container */}
       <div className="max-w-[1920px] mx-auto px-8 py-12 space-y-12">
-        {/* Premium Header */}
+        {/* Unified Header, Filters & Metrics Container */}
         <div className="relative animate-fade-in">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-orange-500/10 rounded-3xl blur-3xl" />
-          <Card className="relative premium-card p-10 rounded-3xl border-2 shadow-2xl bg-gradient-to-br from-white via-slate-50/50 to-white backdrop-blur-sm">
-            <div className="flex items-center justify-between">
-              <div className="space-y-4">
-                <div className="flex items-center gap-8">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 rounded-3xl blur-xl opacity-40 animate-pulse" />
-                    <div className="relative p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 text-white rounded-3xl shadow-2xl">
-                      <Building2 className="h-10 w-10" />
+          <Card className="relative premium-card rounded-3xl border-2 shadow-2xl bg-gradient-to-br from-white via-slate-50/50 to-white backdrop-blur-sm overflow-hidden">
+            
+            {/* Header Section */}
+            <div className="p-10 border-b border-slate-200/50">
+              <div className="flex items-center justify-between">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-8">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 rounded-3xl blur-xl opacity-40 animate-pulse" />
+                      <div className="relative p-6 bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 text-white rounded-3xl shadow-2xl">
+                        <Building2 className="h-10 w-10" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <h1 className="text-5xl font-bold bg-gradient-to-r from-slate-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
-                      Membership Expirations & Churn Tracker
-                    </h1>
-                    <p className="text-2xl text-slate-600 font-medium">
-                      Advanced insights & comprehensive member management platform
-                    </p>
-                    <div className="flex items-center gap-4 mt-4">
-                      <div className="flex items-center gap-2 bg-emerald-100 text-emerald-800 px-4 py-2 rounded-full text-sm font-semibold">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                        Live Data
-                      </div>
-                      <div className="flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold">
-                        <Sparkles className="h-4 w-4" />
-                        Premium Features
-                      </div>
-                      {hasActiveFilters() && (
-                        <div className="flex items-center gap-2 bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-semibold">
-                          <Filter className="h-4 w-4" />
-                          Filters Active ({filteredData.length} results)
+                    <div className="space-y-2">
+                      <h1 className="text-5xl font-bold bg-gradient-to-r from-slate-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
+                        Membership Expirations & Churn Tracker
+                      </h1>
+                      <p className="text-2xl text-slate-600 font-medium">
+                        Advanced insights & comprehensive member management platform
+                      </p>
+                      <div className="flex items-center gap-4 mt-4">
+                        <div className="flex items-center gap-2 bg-emerald-100 text-emerald-800 px-4 py-2 rounded-full text-sm font-semibold">
+                          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                          Live Data
                         </div>
-                      )}
+                        <div className="flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold">
+                          <Sparkles className="h-4 w-4" />
+                          Premium Features
+                        </div>
+                        {hasActiveFilters() && (
+                          <div className="flex items-center gap-2 bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-semibold">
+                            <Filter className="h-4 w-4" />
+                            Filters Active ({filteredData.length} results)
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <ThemeToggle />
-                <Link to="/churn-analytics">
+                
+                <div className="flex items-center gap-4">
+                  <ThemeToggle />
+                  <Link to="/churn-analytics">
+                    <Button 
+                      variant="outline" 
+                      size="lg"
+                      className="premium-card border-red-200 hover:bg-red-50 text-red-700 shadow-lg hover:shadow-xl font-semibold px-6"
+                    >
+                      <TrendingDown className="h-5 w-5 mr-2" />
+                      Churn Analytics
+                    </Button>
+                  </Link>
                   <Button 
+                    onClick={handleRefresh} 
                     variant="outline" 
                     size="lg"
-                    className="premium-card border-red-200 hover:bg-red-50 text-red-700 shadow-lg hover:shadow-xl font-semibold px-6"
+                    className="premium-card hover:bg-slate-50 shadow-lg hover:shadow-xl font-semibold px-6"
                   >
-                    <TrendingDown className="h-5 w-5 mr-2" />
-                    Churn Analytics
+                    <RefreshCw className="h-5 w-5 mr-2" />
+                    Refresh Data
                   </Button>
-                </Link>
-                <Button 
-                  onClick={handleRefresh} 
-                  variant="outline" 
-                  size="lg"
-                  className="premium-card hover:bg-slate-50 shadow-lg hover:shadow-xl font-semibold px-6"
-                >
-                  <RefreshCw className="h-5 w-5 mr-2" />
-                  Refresh Data
-                </Button>
-                <Button 
-                  onClick={() => setIsFilterOpen(true)} 
-                  size="lg"
-                  className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 hover:from-blue-700 hover:via-purple-700 hover:to-blue-900 shadow-xl hover:shadow-2xl font-semibold px-8"
-                >
-                  <Filter className="h-5 w-5 mr-2" />
-                  Advanced Filters
-                </Button>
-                {hasActiveFilters() && (
                   <Button 
-                    onClick={handleFiltersReset}
-                    variant="outline"
+                    onClick={() => setIsFilterOpen(true)} 
                     size="lg"
-                    className="premium-card border-orange-200 hover:bg-orange-50 text-orange-700 shadow-lg hover:shadow-xl font-semibold px-6"
+                    className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 hover:from-blue-700 hover:via-purple-700 hover:to-blue-900 shadow-xl hover:shadow-2xl font-semibold px-8"
                   >
-                    Clear All Filters
+                    <Filter className="h-5 w-5 mr-2" />
+                    Advanced Filters
                   </Button>
-                )}
+                  {hasActiveFilters() && (
+                    <Button 
+                      onClick={handleFiltersReset}
+                      variant="outline"
+                      size="lg"
+                      className="premium-card border-orange-200 hover:bg-orange-50 text-orange-700 shadow-lg hover:shadow-xl font-semibold px-6"
+                    >
+                      Clear All Filters
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Smart Filters Section */}
+            <div className="px-10 py-8 bg-gradient-to-r from-slate-50/50 via-blue-50/30 to-purple-50/20 border-b border-slate-200/50">
+              <CollapsibleFilters
+                quickFilter={quickFilter}
+                onQuickFilterChange={setQuickFilter}
+                onSmartFiltersChange={setSmartFilters}
+                membershipData={filteredData}
+                availableLocations={availableLocations}
+              />
+            </div>
+
+            {/* Metrics Section */}
+            <div className="p-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <MetricCard
+                  title="Total Members"
+                  value={filteredData.length}
+                  icon={Users}
+                  change="+12% from last month"
+                  trend="up"
+                  tooltip="Total number of registered members across all locations and membership types"
+                  drillDownData={[
+                    { label: 'This Month', value: 25 },
+                    { label: 'Last Month', value: 18 },
+                    { label: 'Active', value: activeMembers.length },
+                    { label: 'Inactive', value: expiredMembers.length }
+                  ]}
+                />
+                <MetricCard
+                  title="Active Members"
+                  value={activeMembers.length}
+                  icon={UserCheck}
+                  change="+5% from last month"
+                  trend="up"
+                  tooltip="Members with active subscriptions and valid access to facilities"
+                  drillDownData={[
+                    { label: 'New', value: 12 },
+                    { label: 'Renewed', value: 8 },
+                    { label: 'With Sessions', value: membersWithSessions.length },
+                    { label: 'Expiring Soon', value: expiringMembers.length }
+                  ]}
+                />
+                <MetricCard
+                  title="Expired Members"
+                  value={expiredMembers.length}
+                  icon={UserX}
+                  change="-8% from last month"
+                  trend="down"
+                  tooltip="Members whose subscriptions have expired and need renewal"
+                  drillDownData={[
+                    { label: 'This Week', value: 3 },
+                    { label: 'This Month', value: 8 },
+                    { label: 'Recoverable', value: 15 },
+                    { label: 'Lost', value: 5 }
+                  ]}
+                />
+                <MetricCard
+                  title="Total Sessions"
+                  value={filteredData.reduce((sum, member) => sum + member.sessionsLeft, 0)}
+                  icon={Dumbbell}
+                  change="+15% from last month"
+                  trend="up"
+                  tooltip="Total remaining sessions across all active memberships"
+                  drillDownData={[
+                    { label: 'Available', value: filteredData.reduce((sum, member) => sum + member.sessionsLeft, 0) },
+                    { label: 'Used This Month', value: 156 },
+                    { label: 'Avg per Member', value: Math.round(filteredData.reduce((sum, member) => sum + member.sessionsLeft, 0) / filteredData.length) || 0 },
+                    { label: 'Peak Usage', value: 45 }
+                  ]}
+                />
               </div>
             </div>
           </Card>
-        </div>
-
-        {/* Enhanced Collapsible Filters */}
-        <div className="animate-slide-up">
-          <CollapsibleFilters
-            quickFilter={quickFilter}
-            onQuickFilterChange={setQuickFilter}
-            onSmartFiltersChange={setSmartFilters}
-            membershipData={filteredData}
-            availableLocations={availableLocations}
-          />
-        </div>
-
-        {/* Premium Metrics Grid - Now uses filtered data */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 animate-slide-up">
-          <MetricCard
-            title="Total Members"
-            value={filteredData.length}
-            icon={Users}
-            change="+12% from last month"
-            trend="up"
-            tooltip="Total number of registered members across all locations and membership types"
-            drillDownData={[
-              { label: 'This Month', value: 25 },
-              { label: 'Last Month', value: 18 },
-              { label: 'Active', value: activeMembers.length },
-              { label: 'Inactive', value: expiredMembers.length }
-            ]}
-          />
-          <MetricCard
-            title="Active Members"
-            value={activeMembers.length}
-            icon={UserCheck}
-            change="+5% from last month"
-            trend="up"
-            tooltip="Members with active subscriptions and valid access to facilities"
-            drillDownData={[
-              { label: 'New', value: 12 },
-              { label: 'Renewed', value: 8 },
-              { label: 'With Sessions', value: membersWithSessions.length },
-              { label: 'Expiring Soon', value: expiringMembers.length }
-            ]}
-          />
-          <MetricCard
-            title="Expired Members"
-            value={expiredMembers.length}
-            icon={UserX}
-            change="-8% from last month"
-            trend="down"
-            tooltip="Members whose subscriptions have expired and need renewal"
-            drillDownData={[
-              { label: 'This Week', value: 3 },
-              { label: 'This Month', value: 8 },
-              { label: 'Recoverable', value: 15 },
-              { label: 'Lost', value: 5 }
-            ]}
-          />
-          <MetricCard
-            title="Total Sessions"
-            value={filteredData.reduce((sum, member) => sum + member.sessionsLeft, 0)}
-            icon={Dumbbell}
-            change="+15% from last month"
-            trend="up"
-            tooltip="Total remaining sessions across all active memberships"
-            drillDownData={[
-              { label: 'Available', value: filteredData.reduce((sum, member) => sum + member.sessionsLeft, 0) },
-              { label: 'Used This Month', value: 156 },
-              { label: 'Avg per Member', value: Math.round(filteredData.reduce((sum, member) => sum + member.sessionsLeft, 0) / filteredData.length) || 0 },
-              { label: 'Peak Usage', value: 45 }
-            ]}
-          />
         </div>
 
         {/* Premium Charts - Now uses filtered data */}
