@@ -44,6 +44,7 @@ interface MultiFilter {
 interface CollapsibleFiltersProps {
   quickFilter: string;
   onQuickFilterChange: (filter: string) => void;
+  onSmartFiltersChange: (filters: string[]) => void;
   membershipData: any[];
   availableLocations: string[];
 }
@@ -51,6 +52,7 @@ interface CollapsibleFiltersProps {
 export const CollapsibleFilters = ({ 
   quickFilter, 
   onQuickFilterChange, 
+  onSmartFiltersChange,
   membershipData,
   availableLocations 
 }: CollapsibleFiltersProps) => {
@@ -132,43 +134,41 @@ export const CollapsibleFilters = ({
   
   const availableMembershipTypes = [...new Set(membershipData.map(m => m.membershipName).filter(Boolean))];
 
-  // Multi-filter management
-  const toggleFilter = (category: keyof MultiFilter, value: string) => {
-    setActiveFilters(prev => {
-      const currentFilters = prev[category];
-      const isActive = currentFilters.includes(value);
-      
-      let newFilters;
-      if (isActive) {
-        newFilters = currentFilters.filter(f => f !== value);
-      } else {
-        newFilters = [...currentFilters, value];
-      }
-      
-      const updatedFilters = { ...prev, [category]: newFilters };
-      
-      // Notify parent component with combined filter string
-      const allActiveFilters = Object.values(updatedFilters).flat();
-      onQuickFilterChange(allActiveFilters.length > 0 ? 'multi-filter' : 'all');
-      
-      return updatedFilters;
-    });
-  };
+// Multi-filter management
+const toggleFilter = (category: keyof MultiFilter, value: string) => {
+  setActiveFilters(prev => {
+    const currentFilters = prev[category];
+    const isActive = currentFilters.includes(value);
+    
+    let newFilters;
+    if (isActive) {
+      newFilters = currentFilters.filter(f => f !== value);
+    } else {
+      newFilters = [...currentFilters, value];
+    }
+    
+    const updatedFilters = { ...prev, [category]: newFilters };
+    // Notify parent with the flattened active filters
+    const allActiveFilters = Object.values(updatedFilters).flat();
+    onSmartFiltersChange(allActiveFilters as string[]);
+    return updatedFilters;
+  });
+};
 
-  const clearAllFilters = () => {
-    setActiveFilters({
-      status: [],
-      locations: [],
-      membershipTypes: [],
-      dateFilters: [],
-      sessionFilters: [],
-      customFilters: []
-    });
-    setSearchTerm("");
-    setSessionRange([0, 50]);
-    onQuickFilterChange('all');
-  };
-
+const clearAllFilters = () => {
+  setActiveFilters({
+    status: [],
+    locations: [],
+    membershipTypes: [],
+    dateFilters: [],
+    sessionFilters: [],
+    customFilters: []
+  });
+  setSearchTerm("");
+  setSessionRange([0, 50]);
+  onSmartFiltersChange([]);
+  onQuickFilterChange('all');
+};
   const getActiveFilterCount = () => {
     return Object.values(activeFilters).flat().length + (searchTerm ? 1 : 0);
   };
@@ -363,13 +363,15 @@ export const CollapsibleFilters = ({
                     <div className="flex gap-2">
                       <Button size="sm" variant="outline" onClick={() => {
                         setActiveFilters(prev => ({ ...prev, status: ['active'] }));
-                        onQuickFilterChange('multi-filter');
+                        onSmartFiltersChange(['active']);
+                        onQuickFilterChange('all');
                       }}>
                         Active Only
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => {
                         setActiveFilters(prev => ({ ...prev, sessionFilters: ['low-sessions'] }));
-                        onQuickFilterChange('multi-filter');
+                        onSmartFiltersChange(['low-sessions']);
+                        onQuickFilterChange('all');
                       }}>
                         Low Sessions
                       </Button>

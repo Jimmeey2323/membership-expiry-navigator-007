@@ -10,6 +10,7 @@ import { MembershipData } from "@/types/membership";
 import { TrendingDown, Calendar, Users, AlertTriangle, ArrowLeft, Calculator, BarChart3, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet";
 interface ChurnMetrics {
   month: string;
   startingMembers: number;
@@ -37,13 +38,21 @@ const ChurnAnalytics = () => {
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
 
-  // Get memberships expiring/expired in current month
-  const currentMonthData = useMemo(() => {
-    return membershipData.filter(member => {
-      const endDate = new Date(member.endDate);
-      return endDate.getMonth() === currentMonth && endDate.getFullYear() === currentYear;
-    });
-  }, [membershipData, currentMonth, currentYear]);
+  const parseDate = (dateStr: string): Date => {
+    if (!dateStr || dateStr === '-') return new Date(0);
+    let clean = dateStr.trim();
+    if (clean.includes(' ')) clean = clean.split(' ')[0];
+    if (clean.includes('/')) {
+      const parts = clean.split('/');
+      if (parts.length === 3) {
+        const [day, month, year] = parts;
+        const d = new Date(`${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`);
+        if (!isNaN(d.getTime())) return d;
+      }
+    }
+    const d2 = new Date(clean);
+    return isNaN(d2.getTime()) ? new Date(0) : d2;
+  };
 
   // Calculate month-on-month churn metrics
   const churnMetrics = useMemo(() => {
@@ -69,27 +78,27 @@ const ChurnAnalytics = () => {
 
       // Members active at start of month
       const startingMembers = membershipData.filter(member => {
-        const endDate = new Date(member.endDate);
-        const orderDate = new Date(member.orderDate);
+        const endDate = parseDate(member.endDate);
+        const orderDate = parseDate(member.orderDate);
         return orderDate < monthStart && endDate >= monthStart;
       }).length;
 
       // New members in this month
       const newMembers = membershipData.filter(member => {
-        const orderDate = new Date(member.orderDate);
+        const orderDate = parseDate(member.orderDate);
         return orderDate >= monthStart && orderDate <= monthEnd;
       }).length;
 
       // Members who expired in this month
       const expiredMembers = membershipData.filter(member => {
-        const endDate = new Date(member.endDate);
+        const endDate = parseDate(member.endDate);
         return endDate >= monthStart && endDate <= monthEnd && member.status === 'Expired';
       }).length;
 
       // Active members at end of month
       const endingMembers = membershipData.filter(member => {
-        const endDate = new Date(member.endDate);
-        const orderDate = new Date(member.orderDate);
+        const endDate = parseDate(member.endDate);
+        const orderDate = parseDate(member.orderDate);
         return orderDate <= monthEnd && endDate > monthEnd;
       }).length;
 
@@ -298,7 +307,7 @@ const ChurnAnalytics = () => {
                           <TableCell className="text-slate-600 min-w-52">{member.membershipName}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <span>{new Date(member.endDate).toLocaleDateString()}</span>
+                              <span>{parseDate(member.endDate).toLocaleDateString()}</span>
                               <AlertTriangle className="h-4 w-4 text-orange-500" />
                             </div>
                           </TableCell>
@@ -384,7 +393,7 @@ const ChurnAnalytics = () => {
                           <strong>Membership:</strong> {member.membershipName}
                         </p>
                         <p className="text-sm text-slate-600 mb-1">
-                          <strong>End Date:</strong> {new Date(member.endDate).toLocaleDateString()}
+                          <strong>End Date:</strong> {parseDate(member.endDate).toLocaleDateString()}
                         </p>
                         <p className="text-sm text-slate-600">
                           <strong>Sessions Left:</strong> {member.sessionsLeft}
@@ -415,7 +424,7 @@ const ChurnAnalytics = () => {
                           <strong>Membership:</strong> {member.membershipName}
                         </p>
                         <p className="text-sm text-slate-600 mb-1">
-                          <strong>End Date:</strong> {new Date(member.endDate).toLocaleDateString()}
+                          <strong>End Date:</strong> {parseDate(member.endDate).toLocaleDateString()}
                         </p>
                         <p className="text-sm text-slate-600">
                           <strong>Sessions Left:</strong> {member.sessionsLeft}

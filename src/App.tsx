@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import ChurnAnalytics from "./pages/ChurnAnalytics";
 import NotFound from "./pages/NotFound";
+import Footer from "@/components/Footer";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ function App() {
             <Route path="/churn-analytics" element={<ChurnAnalytics />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <Footer />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

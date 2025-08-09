@@ -40,8 +40,8 @@ const Index = () => {
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [quickFilter, setQuickFilter] = useState<string>('all');
+  const [smartFilters, setSmartFilters] = useState<string[]>([]);
   const [localMembershipData, setLocalMembershipData] = useState<MembershipData[]>([]);
-
   const { data: membershipData = [], isLoading, error, refetch } = useQuery({
     queryKey: ['membershipData'],
     queryFn: () => googleSheetsService.getMembershipData(),
@@ -59,6 +59,10 @@ const Index = () => {
       toast.error("Failed to fetch membership data. Using sample data for demonstration.");
     }
   }, [error]);
+
+  useEffect(() => {
+    document.title = 'Membership Expirations & Churn Tracker';
+  }, []);
 
   const handleAnnotationUpdate = (memberId: string, comments: string, notes: string, tags: string[]) => {
     setLocalMembershipData(prev => 
@@ -215,14 +219,89 @@ const Index = () => {
     }
   };
 
-  // Combined filter application: advanced filters first, then quick filters
+  // Apply multi-select smart filters from CollapsibleFilters
+  const applySmartFilters = (data: MembershipData[]): MembershipData[] => {
+    if (smartFilters.length === 0) return data;
+
+    const now = new Date();
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+    const nextWeek = new Date(now.getTime() + sevenDays);
+    const nextMonth = new Date(now.getTime() + thirtyDays);
+
+    const allLocations = [...new Set(localMembershipData.map(m => m.location).filter(Boolean))];
+    const allTypes = [...new Set(localMembershipData.map(m => m.membershipName).filter(Boolean))];
+
+    return data.filter(member => {
+      // Every active key must match (intersection)
+      for (const key of smartFilters) {
+        switch (key) {
+          case 'active':
+            if (member.status !== 'Active') return false;
+            break;
+          case 'expired':
+            if (member.status !== 'Expired') return false;
+            break;
+          case 'frozen':
+            if (!(member.frozen && member.frozen.toLowerCase() === 'true')) return false;
+            break;
+          case 'sessions':
+            if (!(member.sessionsLeft > 0)) return false;
+            break;
+          case 'no-sessions':
+            if (!(member.sessionsLeft === 0)) return false;
+            break;
+          case 'low-sessions':
+            if (!(member.sessionsLeft > 0 && member.sessionsLeft <= 3)) return false;
+            break;
+          case 'medium-sessions':
+            if (!(member.sessionsLeft >= 4 && member.sessionsLeft <= 10)) return false;
+            break;
+          case 'high-sessions':
+            if (!(member.sessionsLeft > 10)) return false;
+            break;
+          case 'recent':
+            if (!(parseDate(member.orderDate) >= new Date(now.getTime() - thirtyDays))) return false;
+            break;
+          case 'weekly':
+            if (!(parseDate(member.orderDate) >= new Date(now.getTime() - sevenDays))) return false;
+            break;
+          case 'expiring-week': {
+            const endDate = parseDate(member.endDate);
+            if (!(endDate >= now && endDate <= nextWeek && member.status === 'Active')) return false;
+            break;
+          }
+          case 'expiring-month': {
+            const endDate = parseDate(member.endDate);
+            if (!(endDate >= now && endDate <= nextMonth && member.status === 'Active')) return false;
+            break;
+          }
+          case 'premium':
+            if (!(member.membershipName && (member.membershipName.toLowerCase().includes('unlimited') || member.membershipName.toLowerCase().includes('premium')))) return false;
+            break;
+          case 'high-value':
+            if (!(parseFloat(member.paid || '0') > 5000)) return false;
+            break;
+          case 'unpaid':
+            if (!(!member.paid || member.paid === '-' || parseFloat(member.paid || '0') === 0)) return false;
+            break;
+          default:
+            // Location or membership type value
+            if (allLocations.includes(key)) {
+              if (member.location !== key) return false;
+            } else if (allTypes.includes(key)) {
+              if (member.membershipName !== key) return false;
+            }
+        }
+      }
+      return true;
+    });
+  };
+  // Combined filter application: advanced filters first, then quick + smart filters
   const getFilteredData = (): MembershipData[] => {
-    // First apply advanced filters
     let filteredData = applyAdvancedFilters(localMembershipData);
-    
-    // Then apply quick filters
     filteredData = applyQuickFilters(filteredData);
-    
+    filteredData = applySmartFilters(filteredData);
     return filteredData;
   };
 
@@ -267,7 +346,8 @@ const Index = () => {
            filters.dateRange.start !== '' ||
            filters.dateRange.end !== '' ||
            filters.sessionsRange.min !== 0 ||
-           filters.sessionsRange.max !== 100;
+           filters.sessionsRange.max !== 100 ||
+           smartFilters.length > 0;
   };
 
   if (isLoading) {
@@ -327,7 +407,7 @@ const Index = () => {
                   </div>
                   <div className="space-y-2">
                     <h1 className="text-5xl font-bold bg-gradient-to-r from-slate-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
-                      Premium Membership Analytics
+                      Membership Expirations & Churn Tracker
                     </h1>
                     <p className="text-2xl text-slate-600 font-medium">
                       Advanced insights & comprehensive member management platform
@@ -401,6 +481,7 @@ const Index = () => {
           <CollapsibleFilters
             quickFilter={quickFilter}
             onQuickFilterChange={setQuickFilter}
+            onSmartFiltersChange={setSmartFilters}
             membershipData={filteredData}
             availableLocations={availableLocations}
           />
