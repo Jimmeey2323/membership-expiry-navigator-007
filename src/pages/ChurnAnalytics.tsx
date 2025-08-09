@@ -116,6 +116,13 @@ const ChurnAnalytics = () => {
     });
     return metrics;
   }, [membershipData]);
+  const currentMonthData = useMemo(() => {
+    return membershipData.filter(member => {
+      const end = parseDate(member.endDate);
+      return end.getMonth() === currentMonth && end.getFullYear() === currentYear;
+    });
+  }, [membershipData, currentMonth, currentYear]);
+
   const currentMonthMetrics = churnMetrics[churnMetrics.length - 1];
   const previousMonthMetrics = churnMetrics[churnMetrics.length - 2];
   if (isLoading) {
