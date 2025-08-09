@@ -552,7 +552,7 @@ const Index = () => {
               </div>
             </div>
           </Card>        
-
+</div>
         {/* Premium Charts - Now uses filtered data */}
         <div className="animate-slide-up">
           <PremiumCharts data={filteredData} />
