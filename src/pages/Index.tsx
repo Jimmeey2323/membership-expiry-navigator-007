@@ -551,8 +551,7 @@ const Index = () => {
                 />
               </div>
             </div>
-          </Card>
-        </div>
+          </Card>        
 
         {/* Premium Charts - Now uses filtered data */}
         <div className="animate-slide-up">
@@ -595,6 +594,7 @@ const Index = () => {
                   </TabsTrigger>
                 </TabsList>
               </Card>
+            </div>
             </div>
 
             <TabsContent value="overview" className="space-y-6">
